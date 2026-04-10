@@ -251,6 +251,19 @@ function iconTrash() {
   return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
 }
 
+function formatarData(im) {
+  if (im.data_anuncio) {
+    try {
+      var d = new Date(im.data_anuncio);
+      var dia = String(d.getDate()).padStart(2, "0");
+      var mes = String(d.getMonth() + 1).padStart(2, "0");
+      var ano = d.getFullYear();
+      return "📅 " + dia + "/" + mes + "/" + ano;
+    } catch(e) {}
+  }
+  return "visto " + (im.visto_label || "");
+}
+
 function renderCard(im) {
   var thumb = im.thumbnail
     ? '<img class="card-thumb" src="' + im.thumbnail + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
@@ -279,7 +292,7 @@ function renderCard(im) {
     +   '<div class="card-price">' + (im.preco || "Sob consulta") + '</div>'
     +   (tags ? '<div class="card-tags">' + tags + '</div>' : '')
     +   '<div class="card-footer">'
-    +     '<span class="card-date">visto ' + (im.visto_label || "") + '</span>'
+    +     '<span class="card-date">' + formatarData(im) + '</span>'
     +     '<div class="card-actions">'
     +       '<button class="btn-icon fav-btn' + favClass + '" data-id="' + im.id + '" title="Favoritar">' + iconHeart(im.favorito) + '</button>'
     +       '<button class="btn-icon del-btn" data-id="' + im.id + '" title="Apagar">' + iconTrash() + '</button>'
