@@ -33,6 +33,8 @@ def init_db():
         con.execute("ALTER TABLE anuncios ADD COLUMN tipo TEXT DEFAULT ''")
     if "data_anuncio" not in colunas:
         con.execute("ALTER TABLE anuncios ADD COLUMN data_anuncio TEXT DEFAULT ''")
+    if "ignorado" not in colunas:
+        con.execute("ALTER TABLE anuncios ADD COLUMN ignorado INTEGER DEFAULT 0")
     con.commit()
     con.close()
 

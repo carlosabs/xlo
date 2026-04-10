@@ -39,7 +39,7 @@ def api_imoveis():
     ordem    = request.args.get("ordem", "recentes")
     busca    = request.args.get("busca", "")
 
-    query  = "SELECT * FROM anuncios WHERE 1=1"
+    query  = "SELECT * FROM anuncios WHERE ignorado IS NOT 1"
     params = []
 
     if bairro:
@@ -104,7 +104,7 @@ def toggle_favorito(anuncio_id):
 @app.route("/api/imoveis/<anuncio_id>", methods=["DELETE"])
 def deletar(anuncio_id):
     con = get_db()
-    con.execute("DELETE FROM anuncios WHERE id = ?", (anuncio_id,))
+    con.execute("UPDATE anuncios SET ignorado = 1 WHERE id = ?", (anuncio_id,))
     con.commit()
     return jsonify({"ok": True})
 
