@@ -1,0 +1,15 @@
+[Unit]
+Description=OLX Santos Scraper
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/olx_santos/scraper
+ExecStart=/usr/bin/python3 /opt/olx_santos/scraper/scheduler.py
+Restart=on-failure
+RestartSec=60
+StandardOutput=append:/var/log/olx_scraper.log
+StandardError=append:/var/log/olx_scraper.log
+
+[Install]
+WantedBy=multi-user.target

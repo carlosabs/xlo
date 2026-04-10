@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Imóveis Santos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --ink:    #0f1117; --ink2: #3d4152; --ink3: #8a8fa8;
+    --paper:  #f7f5f0; --white: #ffffff; --accent: #1a4fd6;
+    --red:    #ef4444; --pink: #fce7f3; --pink2: #ec4899;
+    --border: #e2dfd8;
+    --shadow: 0 2px 12px rgba(15,17,23,.07);
+    --shadow-hover: 0 8px 32px rgba(15,17,23,.14);
+    --radius: 12px;
+  }
+  body { font-family: 'DM Sans', sans-serif; background: var(--paper); color: var(--ink); min-height: 100vh; }
+
+  header {
+    background: var(--ink); padding: 0 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 64px; position: sticky; top: 0; z-index: 100;
+  }
+  .logo { font-family: 'DM Serif Display', serif; font-size: 22px; color: #fff; }
+  .logo span { color: #6b9bff; }
+  .header-stats { display: flex; gap: 24px; }
+  .stat-pill { font-size: 13px; color: rgba(255,255,255,.55); display: flex; align-items: center; gap: 6px; }
+  .stat-pill strong { color: rgba(255,255,255,.9); font-weight: 600; }
+
+  .tipo-tabs {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 0 32px; display: flex;
+  }
+  .tipo-tab {
+    padding: 14px 24px; font-size: 14px; font-weight: 500; color: var(--ink3);
+    cursor: pointer; border: none; background: none;
+    border-bottom: 2.5px solid transparent; margin-bottom: -1px;
+    transition: all .15s; font-family: 'DM Sans', sans-serif;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tipo-tab:hover { color: var(--ink2); }
+  .tipo-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tipo-tab.favoritos.active { color: var(--pink2); border-bottom-color: var(--pink2); }
+  .tab-badge {
+    font-size: 11px; padding: 1px 7px; border-radius: 20px;
+    background: var(--paper); color: var(--ink3); font-weight: 600;
+  }
+  .tipo-tab.active .tab-badge { background: #dbeafe; color: var(--accent); }
+  .tipo-tab.favoritos.active .tab-badge { background: var(--pink); color: var(--pink2); }
+
+  .filters-bar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 14px 32px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap;
+  }
+  .search-wrap { position: relative; flex: 1; min-width: 200px; max-width: 320px; }
+  .search-wrap svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--ink3); pointer-events: none; }
+  input[type="text"] {
+    width: 100%; padding: 9px 12px 9px 36px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+    background: var(--paper); outline: none; transition: border-color .15s;
+  }
+  input[type="text"]:focus { border-color: var(--accent); background: var(--white); }
+  select {
+    padding: 9px 32px 9px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--ink);
+    background: var(--paper); outline: none; cursor: pointer; appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8fa8' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; transition: border-color .15s;
+  }
+  select:focus { border-color: var(--accent); }
+  .filter-label { font-size: 13px; color: var(--ink3); font-weight: 500; }
+  .results-count { margin-left: auto; font-size: 13px; color: var(--ink3); }
+  .results-count strong { color: var(--ink); font-weight: 600; }
+
+  .container { max-width: 1280px; margin: 0 auto; padding: 28px 32px; }
+  .bairro-pills { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .bairro-pill {
+    font-size: 13px; padding: 5px 14px; border-radius: 20px;
+    border: 1.5px solid var(--border); background: var(--white); color: var(--ink2);
+    cursor: pointer; transition: all .15s; font-weight: 500; display: flex; align-items: center; gap: 6px;
+  }
+  .bairro-pill:hover, .bairro-pill.active { background: var(--accent); border-color: var(--accent); color: var(--white); }
+  .bairro-pill .badge { background: rgba(0,0,0,.12); font-size: 11px; padding: 1px 6px; border-radius: 10px; }
+  .bairro-pill.active .badge { background: rgba(255,255,255,.25); }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+
+  .card {
+    background: var(--white); border-radius: var(--radius); border: 1px solid var(--border);
+    overflow: hidden; box-shadow: var(--shadow); transition: transform .2s, box-shadow .2s;
+    display: flex; flex-direction: column; animation: fadeUp .3s ease both;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: var(--shadow-hover); }
+  .card.favorited { border-color: #fbcfe8; }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+
+  .card-thumb { width: 100%; height: 190px; object-fit: cover; display: block; background: var(--paper); }
+  .card-thumb-placeholder {
+    width: 100%; height: 190px;
+    background: linear-gradient(135deg, #e8e4dc, #d8d4cc);
+    display: flex; align-items: center; justify-content: center; font-size: 40px; color: #b8b4ac;
+  }
+  .card-body { padding: 16px 18px 18px; flex: 1; display: flex; flex-direction: column; }
+  .card-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+  .card-bairro { font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+  .card-tipo { font-size: 10px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 20px; }
+  .card-tipo.venda   { background: #dbeafe; color: #1e40af; }
+  .card-tipo.aluguel { background: #d1fae5; color: #065f46; }
+  .card-title {
+    font-size: 14px; color: var(--ink2); line-height: 1.45; margin-bottom: 12px; flex: 1;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .card-price { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--ink); letter-spacing: -.4px; margin-bottom: 10px; }
+  .card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tag { font-size: 12px; padding: 3px 9px; border-radius: 20px; background: var(--paper); border: 1px solid var(--border); color: var(--ink2); font-weight: 500; }
+
+  .card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--border); }
+  .card-date { font-size: 12px; color: var(--ink3); }
+  .card-actions { display: flex; align-items: center; gap: 6px; }
+
+  .btn-icon {
+    width: 32px; height: 32px; border-radius: 8px; border: 1.5px solid var(--border);
+    background: var(--white); cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; color: var(--ink3);
+  }
+  .btn-icon:hover { border-color: var(--ink3); color: var(--ink2); }
+  .btn-icon.fav-btn svg { transition: all .15s; }
+  .btn-icon.fav-btn.active { border-color: var(--pink2); background: var(--pink); color: var(--pink2); }
+  .btn-icon.del-btn:hover { border-color: var(--red); background: #fee2e2; color: var(--red); }
+
+  .btn-ver {
+    font-size: 13px; font-weight: 600; color: #fff; background: var(--accent);
+    padding: 7px 16px; border-radius: 7px; text-decoration: none; transition: background .15s;
+  }
+  .btn-ver:hover { background: #153fb5; }
+
+  .empty { grid-column: 1/-1; text-align: center; padding: 80px 20px; color: var(--ink3); }
+  .empty-icon { font-size: 48px; margin-bottom: 12px; }
+  .empty h3 { font-family: 'DM Serif Display', serif; font-size: 22px; color: var(--ink2); margin-bottom: 6px; }
+  .loading { grid-column: 1/-1; display: flex; justify-content: center; padding: 60px; }
+  .spinner { width: 32px; height: 32px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin .7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Modal confirmação */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,.45);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 200; opacity: 0; pointer-events: none; transition: opacity .15s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--white); border-radius: var(--radius); padding: 28px;
+    max-width: 360px; width: 90%; box-shadow: var(--shadow-hover);
+    transform: translateY(12px); transition: transform .15s;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .modal p  { font-size: 14px; color: var(--ink3); margin-bottom: 24px; line-height: 1.5; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+  .btn-cancel { padding: 8px 18px; border-radius: 7px; border: 1.5px solid var(--border); background: var(--white); cursor: pointer; font-size: 14px; font-family: 'DM Sans', sans-serif; }
+  .btn-confirm { padding: 8px 18px; border-radius: 7px; border: none; background: var(--red); color: #fff; cursor: pointer; font-size: 14px; font-weight: 600; font-family: 'DM Sans', sans-serif; }
+
+  @media (max-width: 600px) {
+    .container, .filters-bar, .tipo-tabs { padding-left: 16px; padding-right: 16px; }
+    header { padding: 0 16px; }
+    .header-stats { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Imóveis <span>Santos</span></div>
+  <div class="header-stats">
+    <div class="stat-pill">🏠 <strong id="stat-total">—</strong> anúncios</div>
+    <div class="stat-pill">❤️ <strong id="stat-fav">—</strong> favoritos</div>
+    <div class="stat-pill">📅 <strong id="stat-hoje">—</strong> hoje</div>
+  </div>
+</header>
+
+<div class="tipo-tabs">
+  <button class="tipo-tab active" data-tipo="" data-favorito="">Todos</button>
+  <button class="tipo-tab" data-tipo="venda" data-favorito="">Venda</button>
+  <button class="tipo-tab" data-tipo="aluguel" data-favorito="">Aluguel</button>
+  <button class="tipo-tab favoritos" data-tipo="" data-favorito="1">❤️ Favoritos <span class="tab-badge" id="tab-fav-count">0</span></button>
+</div>
+
+<div class="filters-bar">
+  <div class="search-wrap">
+    <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="6.5" cy="6.5" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <input type="text" id="busca" placeholder="Buscar por título ou bairro…">
+  </div>
+  <span class="filter-label">Quartos:</span>
+  <select id="sel-quartos">
+    <option value="">Todos</option>
+    <option value="1">1 quarto</option>
+    <option value="2">2 quartos</option>
+    <option value="3">3+ quartos</option>
+  </select>
+  <span class="filter-label">Ordenar:</span>
+  <select id="sel-ordem">
+    <option value="recentes">Mais recentes</option>
+    <option value="preco_asc">Menor preço</option>
+    <option value="preco_desc">Maior preço</option>
+  </select>
+  <div class="results-count"><strong id="count">—</strong> imóveis</div>
+</div>
+
+<div class="container">
+  <div class="bairro-pills" id="bairro-pills">
+    <button class="bairro-pill active" data-bairro="">Todos os bairros</button>
+  </div>
+  <div class="grid" id="grid">
+    <div class="loading"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- Modal confirmação de exclusão -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <h3>Apagar anúncio?</h3>
+    <p>O anúncio será removido permanentemente do banco de dados. Esta ação não pode ser desfeita.</p>
+    <div class="modal-actions">
+      <button class="btn-cancel" id="modal-cancel">Cancelar</button>
+      <button class="btn-confirm" id="modal-confirm">Apagar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var tipoAtivo      = "";
+var favoritoAtivo  = "";
+var bairroAtivo    = "";
+var debounceTimer;
+var pendingDeleteId = null;
+
+function tag(text) {
+  return text ? '<span class="tag">' + text + '</span>' : "";
+}
+
+function iconHeart(filled) {
+  return filled
+    ? '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'
+    : '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';
+}
+
+function iconTrash() {
+  return '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>';
+}
+
+function renderCard(im) {
+  var thumb = im.thumbnail
+    ? '<img class="card-thumb" src="' + im.thumbnail + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\'">'
+      + '<div class="card-thumb-placeholder" style="display:none">🏠</div>'
+    : '<div class="card-thumb-placeholder">🏠</div>';
+
+  var tipoHtml = im.tipo
+    ? '<span class="card-tipo ' + im.tipo + '">' + im.tipo + '</span>'
+    : "";
+
+  var tags = [
+    im.quartos ? im.quartos + " quarto" + (im.quartos > 1 ? "s" : "") : "",
+    im.area || "",
+  ].filter(Boolean).map(tag).join("");
+
+  var favClass = im.favorito ? " active" : "";
+
+  return '<div class="card' + (im.favorito ? " favorited" : "") + '" data-id="' + im.id + '">'
+    + thumb
+    + '<div class="card-body">'
+    +   '<div class="card-meta">'
+    +     '<div class="card-bairro">' + (im.bairro || "Santos") + '</div>'
+    +     tipoHtml
+    +   '</div>'
+    +   '<div class="card-title">' + im.titulo + '</div>'
+    +   '<div class="card-price">' + (im.preco || "Sob consulta") + '</div>'
+    +   (tags ? '<div class="card-tags">' + tags + '</div>' : '')
+    +   '<div class="card-footer">'
+    +     '<span class="card-date">visto ' + (im.visto_label || "") + '</span>'
+    +     '<div class="card-actions">'
+    +       '<button class="btn-icon fav-btn' + favClass + '" data-id="' + im.id + '" title="Favoritar">' + iconHeart(im.favorito) + '</button>'
+    +       '<button class="btn-icon del-btn" data-id="' + im.id + '" title="Apagar">' + iconTrash() + '</button>'
+    +       '<a class="btn-ver" href="' + im.url + '" target="_blank" rel="noopener">Ver →</a>'
+    +     '</div>'
+    +   '</div>'
+    + '</div></div>';
+}
+
+function carregar() {
+  var params = new URLSearchParams({
+    bairro:   bairroAtivo,
+    quartos:  document.getElementById("sel-quartos").value,
+    ordem:    document.getElementById("sel-ordem").value,
+    busca:    document.getElementById("busca").value,
+    tipo:     tipoAtivo,
+    favorito: favoritoAtivo,
+  });
+
+  document.getElementById("grid").innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+  fetch("/api/imoveis?" + params)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById("count").textContent = data.length;
+      if (data.length === 0) {
+        document.getElementById("grid").innerHTML =
+          '<div class="empty"><div class="empty-icon">' + (favoritoAtivo ? "❤️" : "🔍") + '</div>'
+          + '<h3>' + (favoritoAtivo ? "Nenhum favorito ainda" : "Nenhum imóvel encontrado") + '</h3>'
+          + '<p>' + (favoritoAtivo ? "Clique no coração de um anúncio para favoritar." : "Tente ajustar os filtros.") + '</p></div>';
+      } else {
+        document.getElementById("grid").innerHTML = data.map(renderCard).join("");
+        bindCardActions();
+      }
+    });
+}
+
+function bindCardActions() {
+  // Favoritar
+  document.querySelectorAll(".fav-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      var id = btn.dataset.id;
+      fetch("/api/imoveis/" + id + "/favorito", { method: "PATCH" })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var card = document.querySelector('.card[data-id="' + id + '"]');
+          if (data.favorito) {
+            btn.classList.add("active");
+            btn.innerHTML = iconHeart(true);
+            if (card) card.classList.add("favorited");
+          } else {
+            btn.classList.remove("active");
+            btn.innerHTML = iconHeart(false);
+            if (card) card.classList.remove("favorited");
+            if (favoritoAtivo) card && card.remove();
+          }
+          carregarStats();
+        });
+    });
+  });
+
+  // Apagar
+  document.querySelectorAll(".del-btn").forEach(function(btn) {
+    btn.addEventListener("click", function() {
+      pendingDeleteId = btn.dataset.id;
+      document.getElementById("modal-overlay").classList.add("open");
+    });
+  });
+}
+
+// Modal
+document.getElementById("modal-cancel").addEventListener("click", function() {
+  document.getElementById("modal-overlay").classList.remove("open");
+  pendingDeleteId = null;
+});
+
+document.getElementById("modal-confirm").addEventListener("click", function() {
+  if (!pendingDeleteId) return;
+  fetch("/api/imoveis/" + pendingDeleteId, { method: "DELETE" })
+    .then(function() {
+      var card = document.querySelector('.card[data-id="' + pendingDeleteId + '"]');
+      if (card) card.remove();
+      document.getElementById("modal-overlay").classList.remove("open");
+      pendingDeleteId = null;
+      carregarStats();
+      var count = parseInt(document.getElementById("count").textContent) - 1;
+      document.getElementById("count").textContent = count;
+    });
+});
+
+document.getElementById("modal-overlay").addEventListener("click", function(e) {
+  if (e.target === this) {
+    this.classList.remove("open");
+    pendingDeleteId = null;
+  }
+});
+
+function carregarStats() {
+  fetch("/api/stats")
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      document.getElementById("stat-total").textContent = data.total;
+      document.getElementById("stat-hoje").textContent  = data.hoje;
+      document.getElementById("stat-fav").textContent   = data.favoritos;
+      document.getElementById("tab-fav-count").textContent = data.favoritos;
+
+      var pills = document.getElementById("bairro-pills");
+      pills.innerHTML = '<button class="bairro-pill active" data-bairro="">Todos os bairros</button>';
+      data.bairros.forEach(function(b) {
+        var btn = document.createElement("button");
+        btn.className = "bairro-pill";
+        btn.dataset.bairro = b.bairro;
+        btn.innerHTML = b.bairro + ' <span class="badge">' + b.n + '</span>';
+        pills.appendChild(btn);
+      });
+
+      pills.addEventListener("click", function(e) {
+        var btn = e.target.closest(".bairro-pill");
+        if (!btn) return;
+        document.querySelectorAll(".bairro-pill").forEach(function(p) { p.classList.remove("active"); });
+        btn.classList.add("active");
+        bairroAtivo = btn.dataset.bairro;
+        carregar();
+      });
+    });
+}
+
+// Tabs
+document.querySelectorAll(".tipo-tab").forEach(function(tab) {
+  tab.addEventListener("click", function() {
+    document.querySelectorAll(".tipo-tab").forEach(function(t) { t.classList.remove("active"); });
+    tab.classList.add("active");
+    tipoAtivo     = tab.dataset.tipo;
+    favoritoAtivo = tab.dataset.favorito;
+    carregar();
+  });
+});
+
+document.getElementById("sel-quartos").addEventListener("change", carregar);
+document.getElementById("sel-ordem").addEventListener("change", carregar);
+document.getElementById("busca").addEventListener("input", function() {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(carregar, 300);
+});
+
+carregarStats();
+carregar();
+</script>
+</body>
+</html>
