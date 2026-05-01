@@ -51,7 +51,7 @@ def testar_email():
 
     anuncios = [dict(r) for r in rows]
     log.info("Enviando email de teste com %d anuncios...", len(anuncios))
-    enviar_email(anuncios)
+    enviar_email(anuncios, CONFIG)
     log.info("Pronto — verifique sua caixa de entrada")
 
 
@@ -131,7 +131,7 @@ def rodar():
     log.info("Total de novos anuncios: %d", len(todos_novos))
 
     if todos_novos:
-        enviar_email(todos_novos)
+        enviar_email(todos_novos, CONFIG)
 
     sincronizar()
 
