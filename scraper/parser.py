@@ -59,15 +59,33 @@ def _parse_item(item, tipo=""):
             first = images[0]
             thumbnail = first.get("original", "") if isinstance(first, dict) else first
 
-        # Bairro
-        bairro = ""
+        # Bairro + CEP
+        bairro = cep = ""
         loc = item.get("location") or {}
         if isinstance(loc, dict):
             bairro = loc.get("neighbourhood") or loc.get("municipio") or ""
-        if not bairro:
+            cep = (
+                loc.get("zipcode")
+                or loc.get("zipCode")
+                or loc.get("cep")
+                or loc.get("zip")
+                or ""
+            )
+        if not bairro or not cep:
             loc2 = item.get("locationDetails") or {}
             if isinstance(loc2, dict):
-                bairro = loc2.get("neighbourhood") or loc2.get("zone") or ""
+                if not bairro:
+                    bairro = loc2.get("neighbourhood") or loc2.get("zone") or ""
+                if not cep:
+                    cep = (
+                        loc2.get("zipcode")
+                        or loc2.get("zipCode")
+                        or loc2.get("cep")
+                        or ""
+                    )
+
+        # Normaliza CEP: remove hífen e espaços
+        cep = cep.replace("-", "").replace(" ", "").strip()
 
         # Quartos e area
         quartos = area = ""
@@ -96,12 +114,14 @@ def _parse_item(item, tipo=""):
             "titulo":       titulo,
             "preco":        preco,
             "bairro":       bairro,
+            "cep":          cep,
             "url":          url,
             "thumbnail":    thumbnail,
             "quartos":      quartos,
             "area":         area,
             "tipo":         tipo,
             "data_anuncio": data_anuncio,
+            "logradouro":   "",  # preenchido depois pelo runner via ViaCEP
         }
     except Exception as e:
         log.debug("Erro ao parsear item: %s", e)
@@ -141,7 +161,8 @@ def _fallback(soup, tipo=""):
             if anuncio_id:
                 anuncios.append({
                     "id": anuncio_id, "titulo": titulo, "preco": preco,
-                    "bairro": "", "url": url, "thumbnail": "",
+                    "bairro": "", "cep": "", "logradouro": "",
+                    "url": url, "thumbnail": "",
                     "quartos": "", "area": "", "tipo": tipo, "data_anuncio": "",
                 })
         except Exception:

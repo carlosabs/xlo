@@ -58,8 +58,8 @@ def api_imoveis():
         query += " AND favorito = 1"
 
     if busca:
-        query += " AND (LOWER(titulo) LIKE ? OR LOWER(bairro) LIKE ?)"
-        params += ["%" + busca.lower() + "%", "%" + busca.lower() + "%"]
+        query += " AND (LOWER(titulo) LIKE ? OR LOWER(bairro) LIKE ? OR LOWER(logradouro) LIKE ?)"
+        params += ["%" + busca.lower() + "%"] * 3
 
     if ordem == "preco_asc":
         query += " ORDER BY CAST(REPLACE(REPLACE(REPLACE(preco,'R$ ',''),'.',''),',','.') AS REAL) ASC"
@@ -117,7 +117,7 @@ def api_stats():
     favoritos  = con.execute("SELECT COUNT(*) FROM anuncios WHERE favorito = 1").fetchone()[0]
     bairros    = con.execute("SELECT bairro, COUNT(*) as n FROM anuncios GROUP BY bairro ORDER BY n DESC").fetchall()
     tipos      = con.execute("SELECT tipo, COUNT(*) as n FROM anuncios GROUP BY tipo ORDER BY n DESC").fetchall()
-    return jsonify({
+    return jsonifyCEP({
         "total":     total,
         "hoje":      hoje,
         "favoritos": favoritos,

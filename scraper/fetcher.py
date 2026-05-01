@@ -34,3 +34,24 @@ def buscar_pagina(url, tentativas=3):
 
     log.error("Falhou após %d tentativas: %s", tentativas, url)
     return None
+
+
+def buscar_endereco(cep):
+    """Consulta a ViaCEP e retorna logradouro, bairro, localidade, uf.
+    Retorna dict vazio se o CEP for inválido ou não encontrado.
+    """
+    cep_limpo = cep.replace("-", "").replace(" ", "").strip()
+    if len(cep_limpo) != 8 or not cep_limpo.isdigit():
+        return {}
+    try:
+        resp = SESSION.get(
+            "https://viacep.com.br/ws/{}/json/".format(cep_limpo),
+            timeout=10,
+        )
+        data = resp.json()
+        if "erro" not in data:
+            return data  # logradouro, bairro, localidade, uf, etc.
+        log.debug("ViaCEP: CEP não encontrado: %s", cep_limpo)
+    except Exception as e:
+        log.warning("ViaCEP falhou para %s: %s", cep_limpo, e)
+    return {}

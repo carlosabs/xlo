@@ -17,7 +17,7 @@ from pathlib import Path
 
 from config import CONFIG
 from db import DB_PATH, init_db, ja_visto, salvar
-from fetcher import buscar_pagina
+from fetcher import buscar_pagina, buscar_endereco
 from notifier import enviar_email
 from parser import extrair_anuncios
 
@@ -112,9 +112,19 @@ def rodar():
                     pass
 
             if not ja_visto(a["id"]):
+                # Enriquece com logradouro via ViaCEP antes de salvar
+                if a.get("cep"):
+                    endereco = buscar_endereco(a["cep"])
+                    if endereco.get("logradouro"):
+                        a["logradouro"] = endereco["logradouro"]
+                        log.info("  CEP %s: %s", a["cep"], a["logradouro"])
+
                 salvar(a)
                 todos_novos.append(a)
-                log.info("  NOVO: %s | %s | %s | %s", a["titulo"][:55], a["preco"], a["bairro"], tipo)
+                log.info("  NOVO: %s | %s | %s | %s",
+                    a["titulo"][:55], a["preco"],
+                    a.get("logradouro") or a.get("bairro", ""), tipo,
+                )
 
         time.sleep(random.uniform(*CONFIG.get("delay_entre_buscas", (3, 7))))
 
