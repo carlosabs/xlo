@@ -25,14 +25,16 @@ def buscar_pagina(url, tentativas=3):
             resp = SESSION.get(url, timeout=20)
             if resp.status_code == 200:
                 return resp.text
-            log.warning("Tentativa %d/%d — HTTP %d: %s", i, tentativas, resp.status_code, url)
+            log.warning(
+                "Tentativa %d/%d — HTTP %d — cf-ray=%s — corpo: %s",
+                i, tentativas, resp.status_code,
+                resp.headers.get("cf-ray", "?"),
+                resp.text[:300].replace("\n", " "),
+            )
         except Exception as e:
             log.warning("Tentativa %d/%d — erro: %s", i, tentativas, e)
-
         if i < tentativas:
             time.sleep(2 * i)
-
-    log.error("Falhou após %d tentativas: %s", tentativas, url)
     return None
 
 
